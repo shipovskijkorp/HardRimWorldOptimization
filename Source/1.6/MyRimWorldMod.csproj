@@ -1,0 +1,61 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <OutputPath>../../1.6/Assemblies/</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <!-- RimWorld Installation Path Configuration -->
+  <!-- Override with environment variable RIMWORLD_PATH or pass -p:RimWorldPath="..." to dotnet build -->
+  <PropertyGroup>
+    <RimWorldPath Condition="'$(RimWorldPath)' == ''">$(RIMWORLD_PATH)</RimWorldPath>
+  </PropertyGroup>
+
+  <!-- Platform-specific defaults if RIMWORLD_PATH not set -->
+  <PropertyGroup Condition="'$(RimWorldPath)' == '' And $([MSBuild]::IsOSPlatform('Windows'))">
+    <RimWorldPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld</RimWorldPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(RimWorldPath)' == '' And $([MSBuild]::IsOSPlatform('Linux'))">
+    <RimWorldPath>$(HOME)/.local/share/Steam/steamapps/common/RimWorld</RimWorldPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(RimWorldPath)' == '' And $([MSBuild]::IsOSPlatform('OSX'))">
+    <RimWorldPath>$(HOME)/Library/Application Support/Steam/steamapps/common/RimWorld</RimWorldPath>
+  </PropertyGroup>
+
+  <!-- Platform-specific data folder names -->
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+    <RimWorldDataFolder>RimWorldWin64_Data</RimWorldDataFolder>
+  </PropertyGroup>
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
+    <RimWorldDataFolder>RimWorldLinux_Data</RimWorldDataFolder>
+  </PropertyGroup>
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+    <RimWorldDataFolder>RimWorldMac_Data</RimWorldDataFolder>
+  </PropertyGroup>
+
+  <!-- Determine if local RimWorld installation is available -->
+  <PropertyGroup>
+    <!-- Use OS-appropriate path separators. MSBuild's Exists() can be picky on Windows. -->
+    <RimWorldManagedPath Condition="$([MSBuild]::IsOSPlatform('Windows'))">$(RimWorldPath)\$(RimWorldDataFolder)\Managed</RimWorldManagedPath>
+    <RimWorldManagedPath Condition="!$([MSBuild]::IsOSPlatform('Windows'))">$(RimWorldPath)/$(RimWorldDataFolder)/Managed</RimWorldManagedPath>
+    <RimWorldAssemblyPath>$(RimWorldManagedPath)\Assembly-CSharp.dll</RimWorldAssemblyPath>
+    <UseLocalRimWorld Condition="Exists('$(RimWorldAssemblyPath)')">true</UseLocalRimWorld>
+    <UseLocalRimWorld Condition="!Exists('$(RimWorldAssemblyPath)')">false</UseLocalRimWorld>
+  </PropertyGroup>
+
+  <!-- Local RimWorld references (for development) -->
+  <ItemGroup Condition="'$(UseLocalRimWorld)' == 'true'">
+    <Reference Include="Assembly-CSharp" Private="false">
+      <HintPath>$(RimWorldManagedPath)\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule" Private="false">
+      <HintPath>$(RimWorldManagedPath)\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <!-- RimRef NuGet package (for CI when no local RimWorld) -->
+  <ItemGroup Condition="'$(UseLocalRimWorld)' == 'false'">
+    <PackageReference Include="Krafs.Rimworld.Ref" Version="1.6.*" />
+  </ItemGroup>
+</Project>
