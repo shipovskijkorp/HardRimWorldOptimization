@@ -7,7 +7,7 @@ namespace MyRimWorldMod
     {
         static ModInit()
         {
-            Log.Message("[MyRimWorldMod] Mod loaded.");
+            Log.Message("[HRWO] loaded.");
         }
     }
 }

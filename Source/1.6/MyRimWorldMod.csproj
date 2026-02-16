@@ -58,4 +58,9 @@
   <ItemGroup Condition="'$(UseLocalRimWorld)' == 'false'">
     <PackageReference Include="Krafs.Rimworld.Ref" Version="1.6.*" />
   </ItemGroup>
+  <ItemGroup>
+    <Reference Include="0Harmony">
+      <HintPath>E:\steam\steamapps\workshop\content\294100\2009463077\Current\Assemblies\0Harmony.dll</HintPath>
+    </Reference>
+  </ItemGroup>
 </Project>
