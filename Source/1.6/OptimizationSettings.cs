@@ -41,6 +41,13 @@ namespace MyRimWorldMod
 
         public bool prisonerVerboseLogging = false;
 
+        // --- Quest generation tweaks ---
+        public bool tweakQuestGeneration = true;
+        public bool questUseFastNaturalRandomChooser = true;
+        public int questMaxCanRunChecksPerSelection = 12;
+        public bool questNormalizeZeroPointsForGeneration = true;
+        public bool questUseAncientComplexFallback = true;
+        public bool questVerboseLogging = false;
 
         public override void ExposeData()
         {
@@ -65,6 +72,13 @@ namespace MyRimWorldMod
             Scribe_Values.Look(ref prisonersExcludeNearColonists, "prisonersExcludeNearColonists", true);
             Scribe_Values.Look(ref prisonersNearColonistRadius, "prisonersNearColonistRadius", 25);
             Scribe_Values.Look(ref prisonerVerboseLogging, "prisonerVerboseLogging", false);
+
+            Scribe_Values.Look(ref tweakQuestGeneration, "tweakQuestGeneration", true);
+            Scribe_Values.Look(ref questUseFastNaturalRandomChooser, "questUseFastNaturalRandomChooser", true);
+            Scribe_Values.Look(ref questMaxCanRunChecksPerSelection, "questMaxCanRunChecksPerSelection", 12);
+            Scribe_Values.Look(ref questNormalizeZeroPointsForGeneration, "questNormalizeZeroPointsForGeneration", true);
+            Scribe_Values.Look(ref questUseAncientComplexFallback, "questUseAncientComplexFallback", true);
+            Scribe_Values.Look(ref questVerboseLogging, "questVerboseLogging", false);
         }
     }
 }

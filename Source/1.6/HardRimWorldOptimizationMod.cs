@@ -28,10 +28,7 @@ namespace MyRimWorldMod
             // =========================
             // Wildlife Optimization
             // =========================
-            Text.Font = GameFont.Medium;
-            list.Label("Wildlife Optimization");
-            Text.Font = GameFont.Small;
-            list.Gap(6f);
+            SectionHeader(list, "Wildlife Optimization");
 
             list.CheckboxLabeled(
                 "Throttle factionless neutral animals (major TPS saver)",
@@ -41,7 +38,7 @@ namespace MyRimWorldMod
             {
                 list.Gap(4f);
 
-                list.Label($"Throttle interval: {Settings.throttleIntervalTicks} ticks (~{Settings.throttleIntervalTicks / 60f:0.0}s)");
+                LabelTicksSeconds(list, "Throttle interval", Settings.throttleIntervalTicks);
                 Settings.throttleIntervalTicks = (int)list.Slider(Settings.throttleIntervalTicks, 60, 7200);
 
                 list.GapLine();
@@ -58,11 +55,7 @@ namespace MyRimWorldMod
                 }
 
                 list.Gap(4f);
-                Text.Font = GameFont.Tiny;
-                GUI.color = Color.gray;
-                list.Label("Recommended interval: 1800–3600 ticks (30–60 sec).");
-                GUI.color = Color.white;
-                Text.Font = GameFont.Small;
+                TipText(list, "Recommended interval: 1800–3600 ticks (30–60 sec).");
             }
 
             list.GapLine();
@@ -70,10 +63,7 @@ namespace MyRimWorldMod
             // =========================
             // Turret Optimization
             // =========================
-            Text.Font = GameFont.Medium;
-            list.Label("Turret Optimization");
-            Text.Font = GameFont.Small;
-            list.Gap(6f);
+            SectionHeader(list, "Turret Optimization");
 
             list.CheckboxLabeled(
                 "Optimize player turrets (reduce target scans when no threats)",
@@ -83,12 +73,12 @@ namespace MyRimWorldMod
             {
                 list.Gap(4f);
 
-                list.Label($"Idle scan interval: {Settings.turretIdleScanIntervalTicks} ticks (~{Settings.turretIdleScanIntervalTicks / 60f:0.0}s)");
+                LabelTicksSeconds(list, "Idle scan interval", Settings.turretIdleScanIntervalTicks);
                 Settings.turretIdleScanIntervalTicks = (int)list.Slider(Settings.turretIdleScanIntervalTicks, 60, 2000);
 
                 list.Gap(4f);
 
-                list.Label($"Danger refresh interval: {Settings.turretDangerRefreshIntervalTicks} ticks (~{Settings.turretDangerRefreshIntervalTicks / 60f:0.0}s)");
+                LabelTicksSeconds(list, "Danger refresh interval", Settings.turretDangerRefreshIntervalTicks);
                 Settings.turretDangerRefreshIntervalTicks = (int)list.Slider(Settings.turretDangerRefreshIntervalTicks, 60, 2000);
 
                 list.Gap(4f);
@@ -100,10 +90,7 @@ namespace MyRimWorldMod
             // =========================
             // Prisoner Optimization
             // =========================
-            Text.Font = GameFont.Medium;
-            list.Label("Prisoner Optimization");
-            Text.Font = GameFont.Small;
-            list.Gap(6f);
+            SectionHeader(list, "Prisoner Optimization");
 
             list.CheckboxLabeled(
                 "Throttle prisoners when idle (huge TPS saver for prison-heavy colonies)",
@@ -113,7 +100,7 @@ namespace MyRimWorldMod
             {
                 list.Gap(4f);
 
-                list.Label($"Prisoner throttle interval: {Settings.prisonerThrottleIntervalTicks} ticks (~{Settings.prisonerThrottleIntervalTicks / 60f:0.0}s)");
+                LabelTicksSeconds(list, "Prisoner throttle interval", Settings.prisonerThrottleIntervalTicks);
                 Settings.prisonerThrottleIntervalTicks = (int)list.Slider(Settings.prisonerThrottleIntervalTicks, 15, 600);
 
                 list.Gap(4f);
@@ -132,11 +119,53 @@ namespace MyRimWorldMod
                 list.CheckboxLabeled("Verbose prisoner logging", ref Settings.prisonerVerboseLogging);
 
                 list.Gap(4f);
-                Text.Font = GameFont.Tiny;
-                GUI.color = Color.gray;
-                list.Label("Tip: start with 120–250 ticks (2–4 sec). Increase if your prison is isolated.");
-                GUI.color = Color.white;
-                Text.Font = GameFont.Small;
+                TipText(list, "Tip: start with 120–250 ticks (2–4 sec). Increase if your prison is isolated.");
+            }
+
+            list.GapLine();
+
+            // =========================
+            // Quest Generation
+            // =========================
+            SectionHeader(list, "Quest Generation");
+
+            // master switch
+            list.CheckboxLabeled(
+                "Tweak quest selection/generation (reduce stutters, fix points=0 calls)",
+                ref Settings.tweakQuestGeneration);
+
+            using (new GuiEnabledScope(Settings.tweakQuestGeneration))
+            {
+                list.Gap(4f);
+
+                list.CheckboxLabeled(
+                    "Use fast natural-random quest chooser (fewer CanRun() checks)",
+                    ref Settings.questUseFastNaturalRandomChooser);
+
+                using (new GuiEnabledScope(Settings.questUseFastNaturalRandomChooser))
+                {
+                    list.Gap(2f);
+                    list.Label($"Max CanRun checks per selection: {Settings.questMaxCanRunChecksPerSelection}");
+                    Settings.questMaxCanRunChecksPerSelection =
+                        (int)list.Slider(Settings.questMaxCanRunChecksPerSelection, 1, 60);
+                }
+
+                list.Gap(4f);
+
+                list.CheckboxLabeled(
+                    "Normalize points when quest generation is called with points <= 0",
+                    ref Settings.questNormalizeZeroPointsForGeneration);
+
+                list.Gap(2f);
+                list.CheckboxLabeled(
+                    "Ancient Complex fallback if selection fails (last-resort)",
+                    ref Settings.questUseAncientComplexFallback);
+
+                list.Gap(4f);
+                list.CheckboxLabeled("Verbose quest logging", ref Settings.questVerboseLogging);
+
+                list.Gap(4f);
+                TipText(list, "Note: fast chooser slightly changes probability distribution vs vanilla (usually unnoticeable).");
             }
 
             list.GapLine();
@@ -144,10 +173,7 @@ namespace MyRimWorldMod
             // =========================
             // UI Tweaks
             // =========================
-            Text.Font = GameFont.Medium;
-            list.Label("UI Tweaks");
-            Text.Font = GameFont.Small;
-            list.Gap(6f);
+            SectionHeader(list, "UI Tweaks");
 
             list.CheckboxLabeled(
                 "Compact enemy faction icons in Factions tab (UI perf + cleaner layout)",
@@ -164,7 +190,7 @@ namespace MyRimWorldMod
                 list.CheckboxLabeled("Verbose faction-row logging", ref Settings.compactEnemyIconsVerboseLogging);
             }
 
-            // reset font just in case
+            // reset GUI just in case
             Text.Font = GameFont.Small;
             GUI.color = Color.white;
 
@@ -174,15 +200,42 @@ namespace MyRimWorldMod
             Settings.Write();
         }
 
+        private static void SectionHeader(Listing_Standard list, string title)
+        {
+            Text.Font = GameFont.Medium;
+            list.Label(title);
+            Text.Font = GameFont.Small;
+            list.Gap(6f);
+        }
+
+        private static void LabelTicksSeconds(Listing_Standard list, string label, int ticks)
+        {
+            list.Label($"{label}: {ticks} ticks (~{ticks / 60f:0.0}s)");
+        }
+
+        private static void TipText(Listing_Standard list, string text)
+        {
+            Text.Font = GameFont.Tiny;
+            GUI.color = Color.gray;
+            list.Label(text);
+            GUI.color = Color.white;
+            Text.Font = GameFont.Small;
+        }
+
         private readonly struct GuiEnabledScope : System.IDisposable
         {
             private readonly bool old;
+
             public GuiEnabledScope(bool enabled)
             {
                 old = GUI.enabled;
                 GUI.enabled = enabled;
             }
-            public void Dispose() => GUI.enabled = old;
+
+            public void Dispose()
+            {
+                GUI.enabled = old;
+            }
         }
     }
 }
