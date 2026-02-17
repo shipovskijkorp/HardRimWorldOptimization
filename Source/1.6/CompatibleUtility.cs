@@ -1,35 +1,94 @@
-﻿using HarmonyLib;
-using RimWorld;
-using System;
-using System.Collections.Generic;
+﻿using System;
+using System.Collections;
 using System.Reflection;
+using HarmonyLib;
+using RimWorld;
 using Verse;
 
-#nullable disable
-namespace MyRimWorldMod;
-
-public static class CompatibleUtility
+namespace MyRimWorldMod
 {
-    private static Type Hierarchy = AccessTools.TypeByName("VFEEmpire.WorldComponent_Hierarchy");
-    private static FieldInfo Hierarchy_TitleHolders = AccessTools.Field(CompatibleUtility.Hierarchy, "TitleHolders");
-    private static HediffDef Transcendent = DefDatabase<HediffDef>.GetNamedSilentFail("VRE_Transcendent");
-    private static FactionDef LTS_Courier = DefDatabase<FactionDef>.GetNamedSilentFail(nameof(LTS_Courier));
-    private static FactionDef LTS_Tenant = DefDatabase<FactionDef>.GetNamedSilentFail(nameof(LTS_Tenant));
-
-    public static bool InHierarchy(Pawn pawn)
+    internal static class CompatibleUtility
     {
-        object component = (object)Find.World.GetComponent(CompatibleUtility.Hierarchy);
-        return (CompatibleUtility.Hierarchy_TitleHolders.GetValue(component) as List<Pawn>).Contains(pawn);
-    }
+        private static Type hierarchyType;
+        private static FieldInfo hierarchyTitleHoldersField;
+        private static HediffDef transcendentDef;
+        private static FactionDef ltsCourierDef;
+        private static FactionDef ltsTenantDef;
 
-    public static bool IsTranscendent(Pawn pawn)
-    {
-        HediffSet hediffSet = pawn.health.hediffSet;
-        return hediffSet != null && hediffSet.HasHediff(CompatibleUtility.Transcendent, false);
-    }
+        private static void EnsureInitialized()
+        {
+            if (hierarchyType == null)
+            {
+                hierarchyType = AccessTools.TypeByName("VFEEmpire.WorldComponent_Hierarchy");
 
-    public static bool TenantReserved(Pawn pawn)
-    {
-        return ((Thing)pawn).Faction.def == CompatibleUtility.LTS_Courier || ((Thing)pawn).Faction.def == CompatibleUtility.LTS_Tenant;
+                if (hierarchyType != null)
+                {
+                    hierarchyTitleHoldersField = AccessTools.Field(hierarchyType, "TitleHolders");
+                }
+            }
+
+            if (transcendentDef == null)
+                transcendentDef = DefDatabase<HediffDef>.GetNamedSilentFail("VRE_Transcendent");
+
+            if (ltsCourierDef == null)
+                ltsCourierDef = DefDatabase<FactionDef>.GetNamedSilentFail("LTS_Courier");
+
+            if (ltsTenantDef == null)
+                ltsTenantDef = DefDatabase<FactionDef>.GetNamedSilentFail("LTS_Tenant");
+        }
+
+        public static bool InHierarchy(Pawn pawn)
+        {
+            if (pawn == null)
+                return false;
+
+            EnsureInitialized();
+
+            if (hierarchyType == null || hierarchyTitleHoldersField == null)
+                return false;
+
+            var comp = Find.World.GetComponent(hierarchyType);
+            if (comp == null)
+                return false;
+
+            var list = hierarchyTitleHoldersField.GetValue(comp) as IEnumerable;
+            if (list == null)
+                return false;
+
+            foreach (var entry in list)
+            {
+                if (entry is Pawn p && p == pawn)
+                    return true;
+            }
+
+            return false;
+        }
+
+        public static bool IsTranscendent(Pawn pawn)
+        {
+            if (pawn == null)
+                return false;
+
+            EnsureInitialized();
+
+            if (transcendentDef == null)
+                return false;
+
+            return pawn.health?.hediffSet?.HasHediff(transcendentDef) == true;
+        }
+
+        public static bool TenantReserved(Pawn pawn)
+        {
+            if (pawn == null)
+                return false;
+
+            EnsureInitialized();
+
+            var def = pawn.Faction?.def;
+            if (def == null)
+                return false;
+
+            return def == ltsCourierDef || def == ltsTenantDef;
+        }
     }
 }

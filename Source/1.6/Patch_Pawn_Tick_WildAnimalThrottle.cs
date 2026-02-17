@@ -27,6 +27,9 @@ namespace MyRimWorldMod
             if (interval < 60) interval = 60;
             if (interval > 7200) interval = 7200;
 
+            if (Find.TickManager == null)
+                return true;
+
             int now = Find.TickManager.TicksGame;
             var comp = WildAnimalThrottleComponent.Instance;
             if (comp == null)

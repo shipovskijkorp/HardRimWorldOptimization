@@ -1,5 +1,8 @@
 using LudeonTK;
 using RimWorld;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Verse;
 
 namespace MyRimWorldMod
@@ -195,6 +198,103 @@ namespace MyRimWorldMod
 
 
             return false;
+        }
+        public static AcceptanceReport CanSafelyClean(Pawn pawn)
+        {
+            if (pawn == null)
+                return "null";
+
+            if (pawn.Faction != null && pawn.Faction == Faction.OfPlayer)
+                return "of player";
+
+            if (pawn.IsSlaveOfColony || pawn.IsPrisonerOfColony)
+                return "colony property";
+
+            if (QuestUtility.IsReservedByQuestOrQuestBeingGenerated(pawn))
+                return "quest";
+
+            if (PawnUtility.IsFactionLeader(pawn))
+                return "faction leader";
+
+            if (PawnUtility.ForSaleBySettlement(pawn))
+                return "for sale";
+
+            if (pawn.relations != null && pawn.relations.FamilyByBlood.Any(p => p.IsColonist))
+                return "colonist family";
+
+            if (pawn.Corpse != null && (pawn.Corpse.Spawned || pawn.Corpse.everBuriedInSarcophagus))
+                return "corpse exists";
+
+            if (pawn.ParentHolder != null)
+                return "inside something";
+
+            if (Flag.VFEEmpire && CompatibleUtility.InHierarchy(pawn))
+                return "VFEEmpire";
+
+            if (Flag.VREArchon && CompatibleUtility.IsTranscendent(pawn))
+                return "VREArchon";
+
+            if (Flag.LTSTenant && CompatibleUtility.TenantReserved(pawn))
+                return "LTSTenant";
+
+            return true;
+        }
+
+        [DebugAction("Hard RimWorld Optimization", "Clean World Pawns", false, false, false, false, false, 0, false)]
+        public static void Clean()
+        {
+            List<Pawn> pawnList = new();
+
+            foreach (Pawn pawn in Find.WorldPawns.AllPawnsAliveOrDead)
+            {
+                if (pawn == null) continue;
+                if (CanSafelyClean(pawn))
+                    pawnList.Add(pawn);
+            }
+
+            Log.Message($"Cleaner Service: clean up {pawnList.Count} pawns");
+
+            foreach (Pawn pawn in pawnList)
+            {
+                if (pawn == null) continue;
+                try
+                {
+                    Find.WorldPawns.RemovePawn(pawn);
+                }
+                catch (Exception e)
+                {
+                    Log.Error($"[Cleaner Service] Failed to remove pawn '{pawn?.LabelShort ?? "<null>"}': {e}");
+                }
+            }
+        }
+
+        [DebugAction("Hard RimWorld Optimization", "Clean World Pawns: Include family", false, false, false, false, false, 0, false)]
+        public static void CleanIncludeFamily()
+        {
+            List<Pawn> pawnList = new();
+
+            foreach (Pawn pawn in Find.WorldPawns.AllPawnsAliveOrDead)
+            {
+                if (pawn == null) continue;
+                AcceptanceReport report = CanSafelyClean(pawn);
+                if (report.Accepted || report.Reason == "colonist family")
+                    pawnList.Add(pawn);
+            }
+
+            Log.Message($"Cleaner Service: clean up {pawnList.Count} pawns");
+
+            foreach (Pawn pawn in pawnList)
+            {
+                if (pawn == null) continue;
+                try
+                {
+                    Find.WorldPawns.RemovePawn(pawn);
+                }
+                catch (Exception e)
+                {
+                    Log.Error($"[Cleaner Service] Failed to remove pawn '{pawn?.LabelShort ?? "<null>"}': {e}");
+                }
+            }
         }
     }
 }
