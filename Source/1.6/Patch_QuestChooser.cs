@@ -56,8 +56,6 @@ namespace MyRimWorldMod
                     {
                         points = auto;
                         QuestTweaks_PointsContext.RecordAutoPoints(points);
-                        if (QuestTweaks_Log.Verbose)
-                            QuestTweaks_Log.Message($"Auto-points for selection: {points:F1}");
                     }
                 }
 
@@ -86,10 +84,6 @@ namespace MyRimWorldMod
                         return false; // skip vanilla
                     }
                 }
-
-                // IMPORTANT: fallback to vanilla if fast path failed
-                if (QuestTweaks_Log.Verbose)
-                    QuestTweaks_Log.Message("Fast chooser failed -> falling back to vanilla.");
 
                 return true;
             }

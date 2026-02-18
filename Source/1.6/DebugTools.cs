@@ -174,6 +174,18 @@ namespace MyRimWorldMod
         {
             if (t?.def == null || !t.def.IsWeapon) return false;
 
+            // Some mods may incorrectly tag non-weapon "wood/tree" things as weapons.
+            // Be conservative: only treat inventory items as weapons for this cleanup.
+            // (Vanilla weapons are ThingCategory.Item, but modded defs can be weird.)
+            if (t.def.category != ThingCategory.Item)
+                return false;
+
+            // Extra safety: never consider raw wood / tree resources as "trash weapons".
+            // (User report: wood was being caught due to Neolithic tech level / tags.)
+            string defName = t.def.defName ?? string.Empty;
+            if (defName == "WoodLog" || defName.Contains("Tree") || defName.Contains("WoodLog"))
+                return false;
+
             TechLevel tl = t.def.techLevel;
             if (tl <= TechLevel.Neolithic)
                 return true;
@@ -190,7 +202,7 @@ namespace MyRimWorldMod
                 }
             }
 
-            string dn = t.def.defName ?? "";
+            string dn = defName;
             if (dn.Contains("Bow") || dn.Contains("ShortBow") || dn.Contains("GreatBow") ||
                 dn.Contains("Club") || dn.Contains("Spear") || dn.Contains("Pila") || dn.Contains("Knife") ||
                 dn.Contains("Mace") || dn.Contains("Hammer"))

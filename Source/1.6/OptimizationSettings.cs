@@ -78,7 +78,6 @@ namespace MyRimWorldMod
             Scribe_Values.Look(ref questMaxCanRunChecksPerSelection, "questMaxCanRunChecksPerSelection", 12);
             Scribe_Values.Look(ref questNormalizeZeroPointsForGeneration, "questNormalizeZeroPointsForGeneration", true);
             Scribe_Values.Look(ref questUseAncientComplexFallback, "questUseAncientComplexFallback", true);
-            Scribe_Values.Look(ref questVerboseLogging, "questVerboseLogging", false);
         }
     }
 }

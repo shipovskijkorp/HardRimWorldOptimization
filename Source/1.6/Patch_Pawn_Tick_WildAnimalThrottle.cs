@@ -23,10 +23,6 @@ namespace MyRimWorldMod
             if (settings.excludePredators && WildAnimalThrottleUtility.IsPredator(p))
                 return true;
 
-            int interval = settings.throttleIntervalTicks;
-            if (interval < 60) interval = 60;
-            if (interval > 7200) interval = 7200;
-
             if (Find.TickManager == null)
                 return true;
 
@@ -35,15 +31,43 @@ namespace MyRimWorldMod
             if (comp == null)
                 return true;
 
-            if (!comp.CanDoFullTick(p, now))
-                return false;
+            // =========================
+            // SAFETY GUARDS (critical)
+            // =========================
 
+            // Do not throttle if moving or executing a job
+            if (WildAnimalThrottleUtility.IsBusyOrMoving(p))
+                return true;
+
+            // If hunger is emergency-level, do not throttle at all
+            if (WildAnimalThrottleUtility.IsHungerEmergency(p))
+                return true;
+
+            int interval = settings.throttleIntervalTicks;
+
+            // When skipping entire Pawn.Tick(), long intervals are dangerous.
+            // Cap to safe maximum.
+            if (interval < 60) interval = 60;
+            if (interval > 300) interval = 300;
+
+            // If hunger is getting low, reduce interval heavily
+            if (WildAnimalThrottleUtility.IsHungerCritical(p))
+                interval = 60;
+
+            // Keep responsive near colonists
             if (settings.excludeNearColonists &&
                 WildAnimalThrottleUtility.IsNearColonists(p, settings.excludeNearColonistsRadius))
             {
                 comp.MarkDidFullTick(p, now, 60);
                 return true;
             }
+
+            // =========================
+            // Core throttle logic
+            // =========================
+
+            if (!comp.CanDoFullTick(p, now))
+                return false;
 
             comp.MarkDidFullTick(p, now, interval);
             return true;

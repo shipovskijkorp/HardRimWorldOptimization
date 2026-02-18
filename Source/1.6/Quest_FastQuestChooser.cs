@@ -55,16 +55,12 @@ namespace MyRimWorldMod
                     if (ok)
                     {
                         chosen = q;
-                        if (QuestTweaks_Log.Verbose)
-                            QuestTweaks_Log.Message($"Fast chooser selected root={q.defName} incPop={incPop} candidates={cands.Count} canRunChecks={canRunChecks} points={points:F1}");
+
                         return true;
                     }
 
                     RemoveAtSwapBack(cands, weights, idx);
                 }
-
-                if (QuestTweaks_Log.Verbose)
-                    QuestTweaks_Log.Message($"Fast chooser failed incPop={incPop} candidates={cands.Count} canRunChecks={canRunChecks} points={points:F1}");
 
                 return false;
             }

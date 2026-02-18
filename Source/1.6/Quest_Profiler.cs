@@ -26,8 +26,6 @@ namespace MyRimWorldMod
             public void Dispose()
             {
                 sw.Stop();
-                if (QuestTweaks_Log.Verbose && sw.ElapsedMilliseconds >= minMs)
-                    QuestTweaks_Log.Message($"{name} took {sw.ElapsedMilliseconds} ms");
             }
         }
     }

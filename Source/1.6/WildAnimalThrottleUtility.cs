@@ -18,6 +18,8 @@ namespace MyRimWorldMod
 
         public static bool IsAggressiveNow(Pawn p)
         {
+            if (p == null) return false;
+
             if (p.InMentalState) return true;
 
             var ms = p.mindState;
@@ -34,6 +36,48 @@ namespace MyRimWorldMod
         public static bool IsPredator(Pawn p)
         {
             return p?.RaceProps?.predator == true;
+        }
+
+        /// <summary>
+        /// True if pawn is moving or currently running any job.
+        /// Skipping Pawn.Tick() while moving/doing a job can freeze jobdriver/pather progression.
+        /// </summary>
+        public static bool IsBusyOrMoving(Pawn p)
+        {
+            if (p == null) return false;
+
+            if (p.pather != null && p.pather.Moving)
+                return true;
+
+            // If it has any active job, it's safer not to hard-throttle the whole Tick().
+            if (p.jobs?.curJob != null)
+                return true;
+
+            return false;
+        }
+
+        /// <summary>
+        /// "Critical" hunger: below this, reduce throttling heavily (e.g. force short intervals).
+        /// </summary>
+        public static bool IsHungerCritical(Pawn p)
+        {
+            var food = p?.needs?.food;
+            if (food == null) return false;
+
+            float pct = food.CurLevelPercentage;
+            return pct < 0.35f;
+        }
+
+        /// <summary>
+        /// "Emergency" hunger: below this, do not throttle at all.
+        /// </summary>
+        public static bool IsHungerEmergency(Pawn p)
+        {
+            var food = p?.needs?.food;
+            if (food == null) return false;
+
+            float pct = food.CurLevelPercentage;
+            return pct < 0.20f;
         }
 
         // NOTE: called only when a full tick is about to be allowed (to keep per-tick overhead tiny).

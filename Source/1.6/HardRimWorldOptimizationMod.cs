@@ -8,6 +8,9 @@ namespace MyRimWorldMod
     {
         public static OptimizationSettings Settings;
 
+        // Scroll position for settings window
+        private Vector2 scrollPosition;
+
         public HardRimWorldOptimizationMod(ModContentPack content) : base(content)
         {
             Settings = GetSettings<OptimizationSettings>();
@@ -22,8 +25,17 @@ namespace MyRimWorldMod
 
         public override void DoSettingsWindowContents(Rect inRect)
         {
+            // A large enough view height so everything fits; scrollview will handle the rest.
+            // If you add more sections later, feel free to increase this number.
+            float viewHeight = 1400f;
+
+            // Make the inner view a bit narrower so content doesn't hide behind the scrollbar.
+            Rect viewRect = new Rect(0f, 0f, inRect.width - 16f, viewHeight);
+
+            Widgets.BeginScrollView(inRect, ref scrollPosition, viewRect);
+
             var list = new Listing_Standard();
-            list.Begin(inRect);
+            list.Begin(viewRect);
 
             // =========================
             // Wildlife Optimization
@@ -129,7 +141,6 @@ namespace MyRimWorldMod
             // =========================
             SectionHeader(list, "Quest Generation");
 
-            // master switch
             list.CheckboxLabeled(
                 "Tweak quest selection/generation (reduce stutters, fix points=0 calls)",
                 ref Settings.tweakQuestGeneration);
@@ -145,7 +156,7 @@ namespace MyRimWorldMod
                 using (new GuiEnabledScope(Settings.questUseFastNaturalRandomChooser))
                 {
                     list.Gap(2f);
-                    list.Label($"Max CanRun checks per selection: {Settings.questMaxCanRunChecksPerSelection}");
+                    list.Label($"Max checks per roll: {Settings.questMaxCanRunChecksPerSelection}");
                     Settings.questMaxCanRunChecksPerSelection =
                         (int)list.Slider(Settings.questMaxCanRunChecksPerSelection, 1, 60);
                 }
@@ -153,12 +164,12 @@ namespace MyRimWorldMod
                 list.Gap(4f);
 
                 list.CheckboxLabeled(
-                    "Normalize points when quest generation is called with points <= 0",
+                    "Fix quests when points <= 0",
                     ref Settings.questNormalizeZeroPointsForGeneration);
 
                 list.Gap(2f);
                 list.CheckboxLabeled(
-                    "Ancient Complex fallback if selection fails (last-resort)",
+                    "Ancient Complex like last attemp to control",
                     ref Settings.questUseAncientComplexFallback);
 
                 list.Gap(4f);
@@ -195,8 +206,9 @@ namespace MyRimWorldMod
             GUI.color = Color.white;
 
             list.End();
+            Widgets.EndScrollView();
 
-            // Write after End, not mid-layout
+            // Write after layout end
             Settings.Write();
         }
 

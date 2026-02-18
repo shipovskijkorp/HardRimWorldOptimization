@@ -102,9 +102,6 @@ namespace MyRimWorldMod
 
             if (slate != null)
                 QuestTweaks_PointsUtil.EnsureSlatePoints(slate, normalized);
-
-            if (QuestTweaks_Log.Verbose)
-                QuestTweaks_Log.Message($"Normalized generation points for {(__originalMethod != null ? __originalMethod.Name : "GenerateQuestAndMakeAvailable")}: {normalized:F1}");
         }
     }
 }
