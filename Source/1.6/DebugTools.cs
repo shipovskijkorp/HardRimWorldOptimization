@@ -11,7 +11,21 @@ namespace MyRimWorldMod
     {
         private static bool IsQuestThing(Thing t)
         {
-            return t?.questTags != null && t.questTags.Count > 0;
+            if (t == null) return false;
+
+            // Quest-tagged things (common for spawned quest items)
+            if (t.questTags != null && t.questTags.Count > 0)
+                return true;
+
+            // Quest reservation check exists for Pawn (not generic Thing).
+            if (t is Pawn pawn)
+                return QuestUtility.IsReservedByQuestOrQuestBeingGenerated(pawn);
+
+            // Corpses can be quest-related via inner pawn.
+            if (t is Corpse corpse && corpse.InnerPawn != null)
+                return QuestUtility.IsReservedByQuestOrQuestBeingGenerated(corpse.InnerPawn);
+
+            return false;
         }
 
         [DebugAction("Hard RimWorld Optimization", "Delete chunks & slag on current map",
@@ -161,6 +175,73 @@ namespace MyRimWorldMod
                 MessageTypeDefOf.TaskCompletion, false);
         }
 
+        // =========================
+        // NEW: Biocoded weapon cleanup
+        // =========================
+        [DebugAction("Hard RimWorld Optimization", "Delete biocoded weapons (map, simple)",
+            actionType = DebugActionType.Action, allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        public static void DeleteBiocodedWeaponsOnMap_Simple()
+        {
+            Map map = Find.CurrentMap;
+            if (map == null)
+            {
+                Messages.Message("No current map.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            int removed = 0;
+            int skipped = 0;
+
+            var weapons = map.listerThings.ThingsInGroup(ThingRequestGroup.Weapon);
+            for (int i = weapons.Count - 1; i >= 0; i--)
+            {
+                Thing t = weapons[i];
+                if (t == null || t.Destroyed) continue;
+                if (!t.Spawned) continue;
+
+                if (t.def == null || !t.def.IsWeapon) continue;
+                if (IsQuestThing(t)) { skipped++; continue; }
+
+                CompBiocodable bio = t.TryGetComp<CompBiocodable>();
+                if (bio == null || !bio.Biocoded) continue;
+
+                Pawn owner = bio.CodedPawn;
+
+                if (owner != null)
+                {
+                    // Rule 3: owner is player's colonist (regardless of state)
+                    if (owner.Faction == Faction.OfPlayer)
+                    {
+                        skipped++;
+                        continue;
+                    }
+
+                    if (!owner.Dead)
+                    {
+                        // Rule 1: owner alive and on the map
+                        if (owner.Spawned)
+                        {
+                            skipped++;
+                            continue;
+                        }
+
+                        // Rule 2: owner alive and in a container (sarcophagus, transport, inventory, etc.)
+                        if (owner.ParentHolder != null)
+                        {
+                            skipped++;
+                            continue;
+                        }
+                    }
+                }
+
+                // Otherwise: safe to delete
+                t.Destroy(DestroyMode.Vanish);
+                removed++;
+            }
+
+            Messages.Message($"Deleted biocoded weapons: {removed}, skipped: {skipped}", MessageTypeDefOf.TaskCompletion, false);
+        }
+
         private static bool HasLowQuality(Thing t)
         {
             CompQuality cq = t.TryGetComp<CompQuality>();
@@ -172,18 +253,19 @@ namespace MyRimWorldMod
 
         private static bool IsNeolithicTrashWeapon(Thing t)
         {
-            if (t?.def == null || !t.def.IsWeapon) return false;
+            if (t == null) return false;
+            if (t.def == null) return false;
 
-            // Some mods may incorrectly tag non-weapon "wood/tree" things as weapons.
-            // Be conservative: only treat inventory items as weapons for this cleanup.
-            // (Vanilla weapons are ThingCategory.Item, but modded defs can be weird.)
-            if (t.def.category != ThingCategory.Item)
+            // Only ever act on actual weapon items.
+            if (!t.def.IsWeapon) return false;
+            if (t.def.category != ThingCategory.Item) return false;
+
+            // Extra safety: many mods tag weird stuff as "weapon". Require it to live in Weapons category.
+            if (t.def.thingCategories == null || !t.def.thingCategories.Contains(ThingCategoryDefOf.Weapons))
                 return false;
 
-            // Extra safety: never consider raw wood / tree resources as "trash weapons".
-            // (User report: wood was being caught due to Neolithic tech level / tags.)
-            string defName = t.def.defName ?? string.Empty;
-            if (defName == "WoodLog" || defName.Contains("Tree") || defName.Contains("WoodLog"))
+            // Never delete quest-related items.
+            if (IsQuestThing(t))
                 return false;
 
             TechLevel tl = t.def.techLevel;
@@ -202,15 +284,15 @@ namespace MyRimWorldMod
                 }
             }
 
-            string dn = defName;
+            string dn = t.def.defName ?? "";
             if (dn.Contains("Bow") || dn.Contains("ShortBow") || dn.Contains("GreatBow") ||
                 dn.Contains("Club") || dn.Contains("Spear") || dn.Contains("Pila") || dn.Contains("Knife") ||
                 dn.Contains("Mace") || dn.Contains("Hammer"))
                 return true;
 
-
             return false;
         }
+
         public static AcceptanceReport CanSafelyClean(Pawn pawn)
         {
             if (pawn == null)

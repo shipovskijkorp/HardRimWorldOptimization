@@ -3,7 +3,35 @@
     <name>[Sk] Hard RimWorld Optimization</name>
     <author>shipovskijkorp</author>
     <packageId>shipovskijkorp.HardRimWorldOptimization</packageId>
-    <description>Hard RimWorld Optimization by shipovskijkorp</description>
+   <description>
+Hard RimWorld Optimization (HRWO) is a lightweight performance mod focused on reducing TPS load in large and long-running colonies.
+
+The goal is simple: keep the game responsive without changing core gameplay balance. All features are configurable and can be enabled or disabled individually.
+
+Features:
+
+• Wildlife Optimization  
+  Throttles factionless neutral animals to significantly reduce idle AI load. Optional exclusions for predators and animals near colonists.
+
+• Turret Optimization  
+  Reduces unnecessary target scans when no threats are present, improving performance in heavily fortified bases.
+
+• Prisoner Optimization  
+  Throttles idle prisoners to reduce AI overhead in prison-heavy colonies while keeping interactions responsive.
+
+• Quest Optimization  
+  Optimizes natural quest selection and normalizes invalid point calls (points ≤ 0) to prevent stutters and scaling issues.  
+  Includes safe fallback logic to preserve vanilla behavior.
+
+• Faction UI Improvement  
+  Compacts hostile faction icons in the Factions tab for cleaner layout and minor UI performance benefits.
+
+This mod is designed to be safe, modular, and compatible with most gameplay mods.  
+However, as with any optimization mod, use at your own discretion and test in your mod list.
+
+Good luck, and enjoy smoother colonies.
+</description>
+
     <supportedVersions>
         <li>1.6</li>
     </supportedVersions>
@@ -15,7 +43,4 @@
 			<downloadUrl>https://github.com/pardeike/HarmonyRimWorld/releases/latest</downloadUrl>
 		</li>
 	</modDependencies>
-    <loadAfter>
-        <li>Ludeon.RimWorld</li>
-    </loadAfter>
 </ModMetaData>
