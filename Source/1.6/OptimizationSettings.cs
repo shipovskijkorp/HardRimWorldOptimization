@@ -16,7 +16,6 @@ namespace MyRimWorldMod
         public int compactEnemyIconsMaxRowsWithoutScaling = 4;
         public bool compactEnemyIconsVerboseLogging = false;
 
-
         // --- Turret optimization ---
         public bool optimizePlayerTurrets = true;
 
@@ -28,7 +27,6 @@ namespace MyRimWorldMod
         public int turretDangerRefreshIntervalTicks = 500;
 
         public bool turretVerboseLogging = false;
-
 
         // --- Prisoner optimization ---
         public bool throttlePrisoners = true;
@@ -48,6 +46,21 @@ namespace MyRimWorldMod
         public bool questNormalizeZeroPointsForGeneration = true;
         public bool questUseAncientComplexFallback = true;
         public bool questVerboseLogging = false;
+
+        // --- Plant optimization ---
+        public bool optimizePlants = true;
+
+        // Fully-grown (Growth >= 1.0) plants: allow a real TickLong only once per N ticks.
+        // Default 1400 ticks ~= 23.3 sec (at 60 TPS).
+        public int plantFullyGrownIntervalTicks = 1400;
+
+        // Plants in Home Area / growing zones while still growing (Growth < 1.0)
+        // run slower than vanilla by this multiplier. (e.g. 1.5 = 1.5x slower)
+        public float plantHomeAreaGrowingMultiplier = 1.5f;
+
+        // Wild plants outside Home Area while still growing (Growth < 1.0)
+        // run slower than vanilla by this multiplier. (e.g. 2.0 = 2x slower)
+        public float plantWildGrowingMultiplier = 2.0f;
 
         public override void ExposeData()
         {
@@ -78,6 +91,12 @@ namespace MyRimWorldMod
             Scribe_Values.Look(ref questMaxCanRunChecksPerSelection, "questMaxCanRunChecksPerSelection", 12);
             Scribe_Values.Look(ref questNormalizeZeroPointsForGeneration, "questNormalizeZeroPointsForGeneration", true);
             Scribe_Values.Look(ref questUseAncientComplexFallback, "questUseAncientComplexFallback", true);
+            Scribe_Values.Look(ref questVerboseLogging, "questVerboseLogging", false);
+
+            Scribe_Values.Look(ref optimizePlants, "optimizePlants", false);
+            Scribe_Values.Look(ref plantFullyGrownIntervalTicks, "plantFullyGrownIntervalTicks", 1400);
+            Scribe_Values.Look(ref plantHomeAreaGrowingMultiplier, "plantHomeAreaGrowingMultiplier", 1.5f);
+            Scribe_Values.Look(ref plantWildGrowingMultiplier, "plantWildGrowingMultiplier", 2.0f);
         }
     }
 }

@@ -27,7 +27,7 @@ namespace MyRimWorldMod
         {
             // A large enough view height so everything fits; scrollview will handle the rest.
             // If you add more sections later, feel free to increase this number.
-            float viewHeight = 1400f;
+            float viewHeight = 1650f;
 
             // Make the inner view a bit narrower so content doesn't hide behind the scrollbar.
             Rect viewRect = new Rect(0f, 0f, inRect.width - 16f, viewHeight);
@@ -68,6 +68,36 @@ namespace MyRimWorldMod
 
                 list.Gap(4f);
                 TipText(list, "Recommended interval: 1800–3600 ticks (30–60 sec).");
+            }
+
+            list.GapLine();
+
+            // =========================
+            // Plant Optimization
+            // =========================
+            SectionHeader(list, "Plant Optimization");
+
+            list.CheckboxLabeled(
+                "Optimize plant ticking (reduces overhead on big farms/forests)",
+                ref Settings.optimizePlants);
+
+            using (new GuiEnabledScope(Settings.optimizePlants))
+            {
+                list.Gap(4f);
+
+                LabelTicksSeconds(list, "Fully-grown tick interval", Settings.plantFullyGrownIntervalTicks);
+                Settings.plantFullyGrownIntervalTicks = (int)list.Slider(Settings.plantFullyGrownIntervalTicks, 200, 6000);
+
+                list.Gap(4f);
+                list.Label($"Home Area growing slowdown: ×{Settings.plantHomeAreaGrowingMultiplier:0.0} (slower)");
+                Settings.plantHomeAreaGrowingMultiplier = list.Slider(Settings.plantHomeAreaGrowingMultiplier, 1.0f, 4.0f);
+
+                list.Gap(4f);
+                list.Label($"Wild growing slowdown: ×{Settings.plantWildGrowingMultiplier:0.0} (slower)");
+                Settings.plantWildGrowingMultiplier = list.Slider(Settings.plantWildGrowingMultiplier, 1.0f, 8.0f);
+
+                list.Gap(4f);
+                TipText(list, "Notes: Growth is compensated (no speed-up/slow-down overall). Blight/fire reaction may be delayed up to the interval.");
             }
 
             list.GapLine();

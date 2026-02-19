@@ -23,6 +23,11 @@ Features:
   Optimizes natural quest selection and normalizes invalid point calls (points ≤ 0) to prevent stutters and scaling issues.  
   Includes safe fallback logic to preserve vanilla behavior.
 
+• Plant Optimization  
+  Reduces the load from plants by reducing the frequency of their updates depending on their state and importance 
+  (home zone, wild, fully grown). At the same time, missed ticks are compensated, so the growth rate and age of plants 
+  remain completely vanilla — only the frequency of calculations changes, not the gameplay.  
+
 • Faction UI Improvement  
   Compacts hostile faction icons in the Factions tab for cleaner layout and minor UI performance benefits.
 
