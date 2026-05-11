@@ -4,37 +4,77 @@
     <author>shipovskijkorp</author>
     <packageId>shipovskijkorp.HardRimWorldOptimization</packageId>
    <description>
-Hard RimWorld Optimization (HRWO) is a lightweight performance mod focused on reducing TPS load in large and long-running colonies.
+Hard RimWorld Optimization (HRWO) is a lightweight, modular performance mod focused on reducing TPS load in large, old, and heavily modded colonies.
 
-The goal is simple: keep the game responsive without changing core gameplay balance. All features are configurable and can be enabled or disabled individually.
+I originally made it for my own long-running save, so use it at your own risk. The goal is simple: keep the game responsive without changing core gameplay balance. Every major optimization can be enabled, disabled, and tuned individually in the mod settings.
 
-Features:
+Main features:
 
-• Wildlife Optimization  
-  Throttles factionless neutral animals to significantly reduce idle AI load. Optional exclusions for predators and animals near colonists.
+• Wildlife Optimization
+  Throttles idle Pawn.Tick work for factionless neutral wild animals. This targets one of the classic late-game TPS drains: lots of harmless wildlife doing full pawn logic while nothing important is happening.
 
-• Turret Optimization  
-  Reduces unnecessary target scans when no threats are present, improving performance in heavily fortified bases.
+  Safety options are included:
+  - exclude predators;
+  - exclude animals near colonists;
+  - do not throttle aggressive animals;
+  - do not throttle animals that are moving or running jobs;
+  - do not throttle quest-tagged animals;
+  - reduce or disable throttling when hunger becomes critical.
 
-• Prisoner Optimization  
-  Throttles idle prisoners to reduce AI overhead in prison-heavy colonies while keeping interactions responsive.
+• Turret Optimization
+  Reduces unnecessary target scans for player-owned turrets when the map has no active hostile threat.
 
-• Quest Optimization  
-  Optimizes natural quest selection and normalizes invalid point calls (points ≤ 0) to prevent stutters and scaling issues.  
-  Includes safe fallback logic to preserve vanilla behavior.
+  When danger is detected, turrets fall back to vanilla behavior for responsiveness. Forced targets are not blocked, and existing valid targets can be reused without running a full expensive scan every time.
 
-• Plant Optimization  
-  Reduces the load from plants by reducing the frequency of their updates depending on their state and importance 
-  (home zone, wild, fully grown). At the same time, missed ticks are compensated, so the growth rate and age of plants 
-  remain completely vanilla — only the frequency of calculations changes, not the gameplay.  
+• Prisoner Optimization
+  Throttles idle colony prisoners to reduce AI overhead in prison-heavy colonies.
 
-• Faction UI Improvement  
-  Compacts hostile faction icons in the Factions tab for cleaner layout and minor UI performance benefits.
+  Safety checks keep important cases responsive:
+  - prisoners near colonists can be excluded;
+  - moving prisoners are not throttled;
+  - downed, burning, drafted, mental-state, or otherwise active prisoners are left alone;
+  - nearby colonist checks use the spawned colonist list instead of expensive radius-cell scanning.
 
-This mod is designed to be safe, modular, and compatible with most gameplay mods.  
-However, as with any optimization mod, use at your own discretion and test in your mod list.
+• Quest Optimization
+  Optimizes natural quest selection and quest generation edge cases.
 
+  Includes:
+  - a faster natural-random quest chooser with fewer CanRun checks;
+  - configurable max checks per quest roll;
+  - normalization for invalid zero/negative point calls;
+  - safe fallback behavior, including Ancient Complex fallback support;
+  - optional verbose quest logging for debugging.
+
+• Plant Optimization
+  Reduces plant update overhead by lowering how often selected plant TickLong work runs.
+
+  The main safe saving comes from fully-grown plants, which do not need constant growth updates. Growing plants stay vanilla by default. Advanced settings can slow home-area and wild growing plant updates, with missed long-tick steps compensated so growth and age remain close to vanilla behavior. Use advanced plant settings carefully, because batching too much work can create spikes.
+
+• Developer / Debug Cleanup Tools
+  Adds optional dev-mode cleanup actions for testing and save maintenance:
+  - delete chunks and slag on the current map;
+  - delete non-player, non-quest corpses;
+  - delete all filth on the map;
+  - clean up low-quality raid trash and neolithic weapons;
+  - delete biocoded weapons;
+  - clean world pawns, with an optional family-inclusive variant.
+
+  These tools are intentionally dangerous. Use them only if you understand what they do and always keep save backups.
+
+Compatibility notes:
+
+HRWO is designed to be modular and conservative, but it still patches core systems such as Pawn.Tick, Plant.TickLong, turret targeting, and quest selection. Test it in your own mod list before trusting it with an important colony.
+
+Some compatibility safeguards are included for specific pawn/world-pawn cases, including title holders, transcendent pawns, tenant/courier-style factions, quest-related objects, faction leaders, and player-related pawns where relevant.
+
+Recommended use:
+
+Test your save, and tune the intervals if needed. If something acts cursed, disable that module and report the issue with your mod list and logs.
+
+Backup your saves.
+Do not feed the boomrats.
 Good luck, and enjoy smoother colonies.
+
 </description>
 
     <supportedVersions>
