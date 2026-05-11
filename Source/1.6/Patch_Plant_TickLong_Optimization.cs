@@ -73,6 +73,18 @@ namespace MyRimWorldMod
                 return true;
             }
 
+            // Decide desired interval.
+            int desiredIntervalTicks = GetDesiredIntervalTicks(plant, map, settings, baseInterval);
+            bool isGrowing = plant.Growth < 1f;
+
+            // If growing plants are configured to vanilla cadence, avoid all dictionary/Harmony
+            // scheduling overhead and just let vanilla TickLong run normally.
+            if (isGrowing && desiredIntervalTicks <= baseInterval)
+            {
+                _pendingExtraTickLongCalls = 0;
+                return true;
+            }
+
             int id = plant.thingIDNumber;
             if (!stateByPlant.TryGetValue(id, out PlantTickState st))
             {
@@ -84,17 +96,12 @@ namespace MyRimWorldMod
                 stateByPlant[id] = st;
             }
 
-            // Decide desired interval
-            int desiredIntervalTicks = GetDesiredIntervalTicks(plant, map, settings, baseInterval);
-
             // If not yet allowed, skip this TickLong entirely.
             if (now < st.nextAllowedTick)
                 return false;
 
             // Allowed: schedule next allowed tick.
             st.nextAllowedTick = now + desiredIntervalTicks;
-
-            bool isGrowing = plant.Growth < 1f;
 
             // Compensation for growing plants only.
             // We batch missed TickLong steps since lastAllowedTick.

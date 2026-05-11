@@ -52,19 +52,27 @@ namespace MyRimWorldMod
         private static bool HasColonistNearby(Pawn prisoner, int radius)
         {
             var map = prisoner.Map;
-            if (map == null) return false;
+            if (map == null || radius <= 0) return false;
 
-            // cheap radial scan for colonists
-            foreach (var cell in GenRadial.RadialCellsAround(prisoner.Position, radius, true))
+            // Avoid scanning every cell in a large radius every tick. The vanilla map already
+            // keeps a spawned-colonist list, so this is O(colonists), not O(radius^2 cells).
+            var colonists = map.mapPawns?.FreeColonistsSpawned;
+            if (colonists == null || colonists.Count == 0) return false;
+
+            IntVec3 pos = prisoner.Position;
+            int r2 = radius * radius;
+
+            for (int i = 0; i < colonists.Count; i++)
             {
-                if (!cell.InBounds(map)) continue;
-                var thingList = cell.GetThingList(map);
-                for (int i = 0; i < thingList.Count; i++)
-                {
-                    if (thingList[i] is Pawn p && p.IsColonist && !p.Dead && p.Spawned)
-                        return true;
-                }
+                Pawn c = colonists[i];
+                if (c == null || c.Dead || !c.Spawned) continue;
+
+                int dx = c.Position.x - pos.x;
+                int dz = c.Position.z - pos.z;
+                if (dx * dx + dz * dz <= r2)
+                    return true;
             }
+
             return false;
         }
     }

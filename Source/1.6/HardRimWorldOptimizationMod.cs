@@ -27,7 +27,7 @@ namespace MyRimWorldMod
         {
             // A large enough view height so everything fits; scrollview will handle the rest.
             // If you add more sections later, feel free to increase this number.
-            float viewHeight = 1650f;
+            float viewHeight = 1450f;
 
             // Make the inner view a bit narrower so content doesn't hide behind the scrollbar.
             Rect viewRect = new Rect(0f, 0f, inRect.width - 16f, viewHeight);
@@ -51,7 +51,7 @@ namespace MyRimWorldMod
                 list.Gap(4f);
 
                 LabelTicksSeconds(list, "Throttle interval", Settings.throttleIntervalTicks);
-                Settings.throttleIntervalTicks = (int)list.Slider(Settings.throttleIntervalTicks, 60, 7200);
+                Settings.throttleIntervalTicks = (int)list.Slider(Settings.throttleIntervalTicks, 60, 300);
 
                 list.GapLine();
 
@@ -67,7 +67,7 @@ namespace MyRimWorldMod
                 }
 
                 list.Gap(4f);
-                TipText(list, "Recommended interval: 1800–3600 ticks (30–60 sec).");
+                TipText(list, "Recommended interval: 120–300 ticks (2–5 sec). Higher values are intentionally capped for Pawn.Tick safety.");
             }
 
             list.GapLine();
@@ -86,18 +86,18 @@ namespace MyRimWorldMod
                 list.Gap(4f);
 
                 LabelTicksSeconds(list, "Fully-grown tick interval", Settings.plantFullyGrownIntervalTicks);
-                Settings.plantFullyGrownIntervalTicks = (int)list.Slider(Settings.plantFullyGrownIntervalTicks, 200, 6000);
+                Settings.plantFullyGrownIntervalTicks = (int)list.Slider(Settings.plantFullyGrownIntervalTicks, GenTicks.TickLongInterval, 12000);
 
                 list.Gap(4f);
-                list.Label($"Home Area growing slowdown: ×{Settings.plantHomeAreaGrowingMultiplier:0.0} (slower)");
+                list.Label($"Home Area growing slowdown: ×{Settings.plantHomeAreaGrowingMultiplier:0.0} (advanced)");
                 Settings.plantHomeAreaGrowingMultiplier = list.Slider(Settings.plantHomeAreaGrowingMultiplier, 1.0f, 4.0f);
 
                 list.Gap(4f);
-                list.Label($"Wild growing slowdown: ×{Settings.plantWildGrowingMultiplier:0.0} (slower)");
+                list.Label($"Wild growing slowdown: ×{Settings.plantWildGrowingMultiplier:0.0} (advanced)");
                 Settings.plantWildGrowingMultiplier = list.Slider(Settings.plantWildGrowingMultiplier, 1.0f, 8.0f);
 
                 list.Gap(4f);
-                TipText(list, "Notes: Growth is compensated (no speed-up/slow-down overall). Blight/fire reaction may be delayed up to the interval.");
+                TipText(list, "Safe savings come mostly from fully-grown plants. Growing slowdown is compensated but may batch work, so keep it at ×1.0 unless testing.");
             }
 
             list.GapLine();
@@ -121,7 +121,7 @@ namespace MyRimWorldMod
                 list.Gap(4f);
 
                 LabelTicksSeconds(list, "Danger refresh interval", Settings.turretDangerRefreshIntervalTicks);
-                Settings.turretDangerRefreshIntervalTicks = (int)list.Slider(Settings.turretDangerRefreshIntervalTicks, 60, 2000);
+                Settings.turretDangerRefreshIntervalTicks = (int)list.Slider(Settings.turretDangerRefreshIntervalTicks, 60, 600);
 
                 list.Gap(4f);
                 list.CheckboxLabeled("Verbose turret logging", ref Settings.turretVerboseLogging);
@@ -210,26 +210,6 @@ namespace MyRimWorldMod
             }
 
             list.GapLine();
-
-            // =========================
-            // UI Tweaks
-            // =========================
-            SectionHeader(list, "UI Tweaks");
-
-            list.CheckboxLabeled(
-                "Compact enemy faction icons in Factions tab (UI perf + cleaner layout)",
-                ref Settings.compactEnemyIconsInFactionRow);
-
-            using (new GuiEnabledScope(Settings.compactEnemyIconsInFactionRow))
-            {
-                list.Gap(4f);
-                list.Label($"Max rows without scaling: {Settings.compactEnemyIconsMaxRowsWithoutScaling}");
-                Settings.compactEnemyIconsMaxRowsWithoutScaling =
-                    (int)list.Slider(Settings.compactEnemyIconsMaxRowsWithoutScaling, 1, 10);
-
-                list.Gap(4f);
-                list.CheckboxLabeled("Verbose faction-row logging", ref Settings.compactEnemyIconsVerboseLogging);
-            }
 
             // reset GUI just in case
             Text.Font = GameFont.Small;

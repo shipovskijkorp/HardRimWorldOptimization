@@ -6,15 +6,10 @@ namespace MyRimWorldMod
     {
         // --- Animals optimization ---
         public bool throttleWildAnimals = true;
-        public int throttleIntervalTicks = 1800;
+        public int throttleIntervalTicks = 300;
         public bool excludePredators = true;
         public bool excludeNearColonists = true;
         public int excludeNearColonistsRadius = 30;
-
-        // --- Faction tab UI optimization ---
-        public bool compactEnemyIconsInFactionRow = true;
-        public int compactEnemyIconsMaxRowsWithoutScaling = 4;
-        public bool compactEnemyIconsVerboseLogging = false;
 
         // --- Turret optimization ---
         public bool optimizePlayerTurrets = true;
@@ -24,7 +19,7 @@ namespace MyRimWorldMod
         public int turretIdleScanIntervalTicks = 500;
 
         // How often to refresh "danger present" cache per map.
-        public int turretDangerRefreshIntervalTicks = 500;
+        public int turretDangerRefreshIntervalTicks = 120;
 
         public bool turretVerboseLogging = false;
 
@@ -51,21 +46,19 @@ namespace MyRimWorldMod
         public bool optimizePlants = true;
 
         // Fully-grown (Growth >= 1.0) plants: allow a real TickLong only once per N ticks.
-        // Default 1400 ticks ~= 23.3 sec (at 60 TPS).
-        public int plantFullyGrownIntervalTicks = 1400;
+        // Vanilla long-tick cadence is GenTicks.TickLongInterval (normally 2000 ticks),
+        // so values below that cannot reduce work. Default 6000 ticks = every 3 vanilla long ticks.
+        public int plantFullyGrownIntervalTicks = 6000;
 
-        // Plants in Home Area / growing zones while still growing (Growth < 1.0)
-        // run slower than vanilla by this multiplier. (e.g. 1.5 = 1.5x slower)
-        public float plantHomeAreaGrowingMultiplier = 1.5f;
-
-        // Wild plants outside Home Area while still growing (Growth < 1.0)
-        // run slower than vanilla by this multiplier. (e.g. 2.0 = 2x slower)
-        public float plantWildGrowingMultiplier = 2.0f;
+        // Growing plants are safest at vanilla cadence by default. Raising these values batches
+        // compensated TickLong work and can create spikes; it is left as an advanced option.
+        public float plantHomeAreaGrowingMultiplier = 1.0f;
+        public float plantWildGrowingMultiplier = 1.0f;
 
         public override void ExposeData()
         {
             Scribe_Values.Look(ref throttleWildAnimals, "throttleWildAnimals", true);
-            Scribe_Values.Look(ref throttleIntervalTicks, "throttleIntervalTicks", 1800);
+            Scribe_Values.Look(ref throttleIntervalTicks, "throttleIntervalTicks", 300);
 
             Scribe_Values.Look(ref excludePredators, "excludePredators", true);
             Scribe_Values.Look(ref excludeNearColonists, "excludeNearColonists", true);
@@ -73,12 +66,9 @@ namespace MyRimWorldMod
 
             Scribe_Values.Look(ref optimizePlayerTurrets, "optimizePlayerTurrets", true);
             Scribe_Values.Look(ref turretIdleScanIntervalTicks, "turretIdleScanIntervalTicks", 500);
-            Scribe_Values.Look(ref turretDangerRefreshIntervalTicks, "turretDangerRefreshIntervalTicks", 500);
+            Scribe_Values.Look(ref turretDangerRefreshIntervalTicks, "turretDangerRefreshIntervalTicks", 120);
             Scribe_Values.Look(ref turretVerboseLogging, "turretVerboseLogging", false);
 
-            Scribe_Values.Look(ref compactEnemyIconsInFactionRow, "compactEnemyIconsInFactionRow", true);
-            Scribe_Values.Look(ref compactEnemyIconsMaxRowsWithoutScaling, "compactEnemyIconsMaxRowsWithoutScaling", 4);
-            Scribe_Values.Look(ref compactEnemyIconsVerboseLogging, "compactEnemyIconsVerboseLogging", false);
 
             Scribe_Values.Look(ref throttlePrisoners, "throttlePrisoners", true);
             Scribe_Values.Look(ref prisonerThrottleIntervalTicks, "prisonerThrottleIntervalTicks", 120);
@@ -93,10 +83,10 @@ namespace MyRimWorldMod
             Scribe_Values.Look(ref questUseAncientComplexFallback, "questUseAncientComplexFallback", true);
             Scribe_Values.Look(ref questVerboseLogging, "questVerboseLogging", false);
 
-            Scribe_Values.Look(ref optimizePlants, "optimizePlants", false);
-            Scribe_Values.Look(ref plantFullyGrownIntervalTicks, "plantFullyGrownIntervalTicks", 1400);
-            Scribe_Values.Look(ref plantHomeAreaGrowingMultiplier, "plantHomeAreaGrowingMultiplier", 1.5f);
-            Scribe_Values.Look(ref plantWildGrowingMultiplier, "plantWildGrowingMultiplier", 2.0f);
+            Scribe_Values.Look(ref optimizePlants, "optimizePlants", true);
+            Scribe_Values.Look(ref plantFullyGrownIntervalTicks, "plantFullyGrownIntervalTicks", 6000);
+            Scribe_Values.Look(ref plantHomeAreaGrowingMultiplier, "plantHomeAreaGrowingMultiplier", 1.0f);
+            Scribe_Values.Look(ref plantWildGrowingMultiplier, "plantWildGrowingMultiplier", 1.0f);
         }
     }
 }

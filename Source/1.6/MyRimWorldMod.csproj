@@ -60,7 +60,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="0Harmony">
-      <HintPath>E:\steam\steamapps\workshop\content\294100\2009463077\Current\Assemblies\0Harmony.dll</HintPath>
+      <HintPath>../../1.6/Assemblies/0Harmony.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>
